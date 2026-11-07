@@ -1,0 +1,78 @@
+{
+  "title": "Sheets Exporter input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "datasetId": {
+      "title": "Dataset ID",
+      "type": "string",
+      "editor": "textfield",
+      "description": "ID of the Apify dataset to export (from the Storage tab or a previous run). Use this OR Source URL."
+    },
+    "sourceUrl": {
+      "title": "Source URL",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Public URL of a CSV, JSON array, or JSON Lines file. Use this OR Dataset ID."
+    },
+    "spreadsheetId": {
+      "title": "Google spreadsheet ID",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Optional. The long ID in the sheet URL between /d/ and /edit. Share the spreadsheet with your service account email as an Editor first. Leave empty to only produce CSV/XLSX files."
+    },
+    "serviceAccountKey": {
+      "title": "Service account key (JSON)",
+      "type": "string",
+      "editor": "textarea",
+      "isSecret": true,
+      "description": "Required for Google Sheets. Paste your own service-account JSON key. It is encrypted by Apify, used only for this run, and never logged."
+    },
+    "sheetName": {
+      "title": "Tab name",
+      "type": "string",
+      "editor": "textfield",
+      "default": "Export",
+      "description": "Worksheet tab to write to. Created if missing."
+    },
+    "mode": {
+      "title": "Write mode",
+      "type": "string",
+      "editor": "select",
+      "enum": ["replace", "append"],
+      "enumTitles": ["Replace tab contents", "Append rows below existing data"],
+      "default": "replace"
+    },
+    "outputFormats": {
+      "title": "File outputs",
+      "type": "array",
+      "editor": "select",
+      "items": {"type": "string", "enum": ["csv", "xlsx"], "enumTitles": ["CSV", "Excel (XLSX)"]},
+      "default": ["csv"],
+      "description": "Files saved to the run's key-value store (OUTPUT.csv / OUTPUT.xlsx)."
+    },
+    "maxRows": {
+      "title": "Max rows",
+      "type": "integer",
+      "minimum": 1,
+      "default": 1000000,
+      "description": "Stop after this many source rows."
+    },
+    "maxColumns": {
+      "title": "Max columns",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18278,
+      "default": 500,
+      "description": "Nested fields are flattened to dot.path columns; extra columns beyond this are dropped (and listed in the log)."
+    },
+    "chunkRows": {
+      "title": "Rows per write request",
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 20000,
+      "default": 5000,
+      "sectionCaption": "Advanced"
+    }
+  }
+}

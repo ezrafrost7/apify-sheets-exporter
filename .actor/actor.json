@@ -1,0 +1,10 @@
+{
+  "actorSpecification": 1,
+  "name": "sheets-exporter",
+  "title": "Dataset to Google Sheets, CSV & Excel Exporter",
+  "description": "Export any Apify dataset or public CSV/JSON to Google Sheets (your own service account), CSV and XLSX, with preflight checks and plain-English fixes for auth and limit errors.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "../Dockerfile"
+}
