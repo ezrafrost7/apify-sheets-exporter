@@ -161,18 +161,56 @@ def rows_per_chunk(n_cols: int, max_rows: int = DEFAULT_CHUNK_ROWS,
 _NUMERIC = re.compile(r"^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$")
 
 
-_PLAIN_NUMBER = re.compile(r"-?(0|[1-9]\d{0,14})(\.\d{1,15})?")
+_PLAIN_NUMBER = re.compile(r"-?(0|[1-9]\d*)(\.\d+)?")
+MAX_INT_DIGITS = 11  # Excel's General format shows longer integers as 1.23457E+12
+MAX_SIG_DIGITS = 15  # a double holds ~15 significant digits exactly
 
 
 def as_number(value: Any) -> Any:
-    """Turn plain numeric strings ("22", "-7.25") into numbers for XLSX/Sheets.
+    """Turn one plain numeric string ("22", "-7.25") into a number, else return it unchanged.
 
-    Conservative on purpose: leading zeros ("02134"), 16+ digit IDs, "1e5", "+3",
-    spaces and thousands separators all stay text, so nothing is silently changed.
+    Stays text: leading zeros ("02134"), "-0", "1e5", "+3", " 5", "1,000", integers over
+    11 digits (barcodes, IDs) and decimals over 15 significant digits (precision).
     """
-    if isinstance(value, str) and _PLAIN_NUMBER.fullmatch(value):
-        return float(value) if "." in value else int(value)
-    return value
+    if not isinstance(value, str) or not _PLAIN_NUMBER.fullmatch(value):
+        return value
+    whole, _, frac = value.lstrip("-").partition(".")
+    if value.startswith("-") and not value.strip("-0."):
+        return value  # "-0", "-0.00"
+    if not frac:
+        return int(value) if len(whole) <= MAX_INT_DIGITS else value
+    sig = len((whole + frac).lstrip("0"))
+    return float(value) if sig <= MAX_SIG_DIGITS else value
+
+
+def _convertible(v: Any) -> bool:
+    if isinstance(v, bool):
+        return False
+    return isinstance(v, (int, float)) or as_number(v) is not v
+
+
+def numberize(rows: list[list[Any]]) -> list[list[Any]]:
+    """Convert numeric strings column by column, only where EVERY non-empty value converts.
+
+    A mixed column (e.g. SKUs "10023" and "A-77") is left entirely as text so it sorts
+    consistently. Returns new rows; the input is not modified.
+    """
+    if not rows:
+        return rows
+    width = max(len(r) for r in rows)
+    numeric = []
+    for c in range(width):
+        vals = [r[c] for r in rows if c < len(r) and r[c] != ""]
+        if vals and any(isinstance(v, str) for v in vals) and all(_convertible(v) for v in vals):
+            numeric.append(c)
+    if not numeric:
+        return rows
+    out = [list(r) for r in rows]
+    for r in out:
+        for c in numeric:
+            if c < len(r):
+                r[c] = as_number(r[c])
+    return out
 
 
 def escape_formula(value: Any) -> Any:

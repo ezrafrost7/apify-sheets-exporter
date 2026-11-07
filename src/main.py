@@ -19,7 +19,7 @@ from core import (
     DEFAULT_MAX_COLUMNS,
     FREE_ROWS_PER_RUN,
     append_idempotent,
-    as_number,
+    numberize,
     UserFacingError,
     billable_row_batches,
     build_table,
@@ -153,7 +153,7 @@ def to_xlsx(header: list, rows: list) -> bytes:
     ws = wb.create_sheet("data")
     ws.append([escape_formula(h) for h in header])
     for row in rows:
-        ws.append([as_number(escape_formula(v)) for v in row])
+        ws.append([escape_formula(v) for v in row])
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
@@ -181,6 +181,8 @@ async def main() -> None:
             header, rows, dropped = build_table(records, int(inp.get("maxColumns") or DEFAULT_MAX_COLUMNS))
             if dropped:
                 Actor.log.warning(f"{len(dropped)} columns over the column limit were dropped, e.g. {dropped[:5]}")
+            # CSV keeps every value exactly as given; XLSX and Sheets get real numbers.
+            typed_rows = numberize(rows) if inp.get("convertNumbers", True) else rows
 
             store = await Actor.open_key_value_store()
             formats = inp.get("outputFormats") or ["csv"]
@@ -188,7 +190,7 @@ async def main() -> None:
                 await store.set_value("OUTPUT.csv", to_csv(header, rows), content_type="text/csv")
             if "xlsx" in formats:
                 await store.set_value(
-                    "OUTPUT.xlsx", to_xlsx(header, rows),
+                    "OUTPUT.xlsx", to_xlsx(header, typed_rows),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
 
@@ -197,7 +199,7 @@ async def main() -> None:
                 try:
                     written_to_sheet = await asyncio.to_thread(
                         write_sheet, sa, spreadsheet_id, inp.get("sheetName") or "Export",
-                        inp.get("mode") or "replace", header, [[as_number(v) for v in r] for r in rows],
+                        inp.get("mode") or "replace", header, typed_rows,
                         int(inp.get("chunkRows") or DEFAULT_CHUNK_ROWS),
                     )
                 except UserFacingError:

@@ -51,6 +51,12 @@
       "default": ["csv"],
       "description": "Files saved to the run's key-value store (OUTPUT.csv / OUTPUT.xlsx)."
     },
+    "convertNumbers": {
+      "title": "Convert numbers",
+      "type": "boolean",
+      "default": true,
+      "description": "Write plain numbers (22, -7.25) as real numbers in Excel and Google Sheets, so they can be summed and sorted. A column is converted only if every value in it is a plain number; leading zeros, long IDs and barcodes stay text. Turn off to keep every value exactly as text. CSV output is never changed."
+    },
     "maxRows": {
       "title": "Max rows",
       "type": "integer",

@@ -27,5 +27,6 @@ Free for the first 2,000 rows of each run. After that, $0.25 per 1,000 rows expo
 - Google Sheets caps a spreadsheet at 10M cells and a cell at 50k characters (longer text is cut).
 - The target spreadsheet must already exist and be shared with the service account. Service accounts can't own Drive files, so this Actor never creates new spreadsheets.
 - CSV/XLSX cells that start with `= + - @` are prefixed with `'` to block formula injection. Plain numbers such as `-5` are left alone.
+- **Numbers:** in Excel and Google Sheets, a column whose values are all plain numbers (`22`, `-7.25`) is written as real numbers. Mixed columns, leading zeros (`02134`), integers over 11 digits (barcodes, IDs) and decimals over 15 significant digits stay text. Trailing zeros are dropped (`1.50` becomes `1.5`). Turn off **Convert numbers** to keep everything as text. CSV output is never changed.
 - Append mode requires the tab's header row to match the export's columns.
 - Replace mode clears the tab before writing, so a failure partway through can leave it half-filled. Use a dedicated tab for exports, not one holding data you edit by hand.

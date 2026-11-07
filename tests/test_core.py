@@ -201,6 +201,36 @@ def test_as_number_converts_only_plain_numbers():
     assert core.as_number("22") == 22 and isinstance(core.as_number("22"), int)
     assert core.as_number("-7.25") == -7.25
     assert core.as_number("0") == 0 and core.as_number("0.5") == 0.5
-    for keep in ["02134", "1234567890123456", "1e5", "+3", " 5", "1,000", "", "abc", "5.", ".5", "=1+1"]:
+    for keep in ["02134", "1e5", "+3", " 5", "1,000", "", "abc", "5.", ".5", "=1+1"]:
         assert core.as_number(keep) == keep
     assert core.as_number(7) == 7 and core.as_number(None) is None
+
+
+def test_n1_decimals_over_15_significant_digits_stay_text():
+    v = "123456789012345.123456789012345"
+    assert core.as_number(v) == v
+    assert core.as_number("12345678.1234567") == 12345678.1234567  # 15 sig digits: ok
+    assert core.as_number("0.000000000000001") == 1e-15  # leading zeros aren't significant
+
+
+def test_n2_integers_over_11_digits_stay_text():
+    assert core.as_number("12345678901") == 12345678901
+    assert core.as_number("4006381333931") == "4006381333931"  # 13-digit EAN barcode
+
+
+def test_n3_mixed_column_stays_text_whole():
+    rows = [["10023", "1.5", "", 7], ["A-77", "2", "", "8"], ["10024", "", "", ""]]
+    out = core.numberize(rows)
+    assert [r[0] for r in out] == ["10023", "A-77", "10024"]  # mixed SKU column untouched
+    assert [r[1] for r in out] == [1.5, 2, ""]  # blanks don't block conversion
+    assert [r[2] for r in out] == ["", "", ""]  # all-empty column untouched
+    assert [r[3] for r in out] == [7, 8, ""]  # already-numeric values count as numeric
+    assert rows[1][1] == "2"  # input not modified
+    assert core.numberize([["TRUE"], [True]]) == [["TRUE"], [True]]
+
+
+def test_n4_negative_zero_stays_text_and_option_exists():
+    assert core.as_number("-0") == "-0" and core.as_number("-0.00") == "-0.00"
+    import json, pathlib
+    schema = json.loads((pathlib.Path(__file__).parents[1] / ".actor/input_schema.json").read_text())
+    assert schema["properties"]["convertNumbers"]["default"] is True
