@@ -30,3 +30,7 @@ Free for the first 2,000 rows of each run. After that, $0.25 per 1,000 rows expo
 - **Numbers:** in Excel and Google Sheets, a column whose values are all plain numbers (`22`, `-7.25`) is written as real numbers. Mixed columns, leading zeros (`02134`), integers over 11 digits (barcodes, IDs) and decimals over 15 significant digits stay text. Trailing zeros are dropped (`1.50` becomes `1.5`). Turn off **Convert numbers** to keep everything as text. CSV output is never changed. In Append mode the decision is made per run, so a column can be numbers in one run and text in another. Keep the setting the same across runs, or turn it off, if that matters.
 - Append mode requires the tab's header row to match the export's columns.
 - Replace mode clears the tab before writing, so a failure partway through can leave it half-filled. Use a dedicated tab for exports, not one holding data you edit by hand.
+
+---
+
+MIT licensed. Built with AI assistance (Claude Code) and reviewed by a human.

@@ -2,3 +2,6 @@
 __pycache__/
 storage/
 *.json.key
+.pytest_cache/
+*.pyc
+.env
