@@ -39,16 +39,35 @@
       "title": "Write mode",
       "type": "string",
       "editor": "select",
-      "enum": ["replace", "append"],
-      "enumTitles": ["Replace tab contents", "Append rows below existing data"],
-      "default": "replace"
+      "enum": [
+        "replace",
+        "append"
+      ],
+      "enumTitles": [
+        "Replace tab contents",
+        "Append rows below existing data"
+      ],
+      "default": "replace",
+      "description": "Replace clears the tab and writes the export. Append adds rows below the existing data. If a write request fails and is retried, rows are not added twice."
     },
     "outputFormats": {
       "title": "File outputs",
       "type": "array",
       "editor": "select",
-      "items": {"type": "string", "enum": ["csv", "xlsx"], "enumTitles": ["CSV", "Excel (XLSX)"]},
-      "default": ["csv"],
+      "items": {
+        "type": "string",
+        "enum": [
+          "csv",
+          "xlsx"
+        ],
+        "enumTitles": [
+          "CSV",
+          "Excel (XLSX)"
+        ]
+      },
+      "default": [
+        "csv"
+      ],
       "description": "Files saved to the run's key-value store (OUTPUT.csv / OUTPUT.xlsx)."
     },
     "convertNumbers": {
@@ -78,7 +97,8 @@
       "minimum": 100,
       "maximum": 20000,
       "default": 5000,
-      "sectionCaption": "Advanced"
+      "sectionCaption": "Advanced",
+      "description": "How many rows go in each Google Sheets write request. Lower it if you hit request-size errors."
     }
   }
 }
