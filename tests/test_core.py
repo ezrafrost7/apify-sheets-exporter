@@ -234,3 +234,23 @@ def test_n4_negative_zero_stays_text_and_option_exists():
     import json, pathlib
     schema = json.loads((pathlib.Path(__file__).parents[1] / ".actor/input_schema.json").read_text())
     assert schema["properties"]["convertNumbers"]["default"] is True
+
+
+def test_google_status_reads_spreadsheet_not_found_and_response_args():
+    class Resp:
+        status_code = 404
+
+    class SpreadsheetNotFound(Exception):
+        pass
+
+    class APIError(Exception):
+        def __init__(self, r):
+            super().__init__(r)
+            self.response = r
+
+    assert core.google_status(SpreadsheetNotFound(Resp())) == 404
+    assert core.google_status(APIError(Resp())) == 404
+    assert core.google_status(Exception(Resp())) == 404
+    assert core.google_status(ValueError("x")) is None
+    msg = core.friendly_google_error(core.google_status(SpreadsheetNotFound(Resp())), "<Response [404]>", "sa@x.iam.gserviceaccount.com")
+    assert msg.startswith("Spreadsheet not found") and "sa@x.iam.gserviceaccount.com" in msg

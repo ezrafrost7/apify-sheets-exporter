@@ -26,6 +26,7 @@ from core import (
     chunked,
     escape_formula,
     friendly_google_error,
+    google_status,
     parse_service_account,
     preflight_cells,
     redact,
@@ -205,7 +206,7 @@ async def main() -> None:
                 except UserFacingError:
                     raise
                 except Exception as e:  # gspread.exceptions.APIError and friends
-                    status = getattr(getattr(e, "response", None), "status_code", None)
+                    status = google_status(e)
                     raise UserFacingError(friendly_google_error(status, str(e), sa["client_email"])) from None
 
             exported = max(written_to_sheet, len(rows))

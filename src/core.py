@@ -259,6 +259,18 @@ def billable_row_batches(rows_written: int, free_rows: int, batch: int = 1000) -
     return -(-over // batch)
 
 
+def google_status(e: BaseException) -> int | None:
+    """HTTP status of a gspread/requests error. gspread's SpreadsheetNotFound carries the
+    response as its first argument instead of a .response attribute, so check both."""
+    if type(e).__name__ == "SpreadsheetNotFound":
+        return 404
+    for obj in (getattr(e, "response", None), *getattr(e, "args", ())[:1]):
+        code = getattr(obj, "status_code", None)
+        if isinstance(code, int):
+            return code
+    return None
+
+
 def friendly_google_error(status: int | None, message: str, sa_email: str) -> str:
     """Map common Google API failures to a plain-English fix."""
     m = message.lower()
